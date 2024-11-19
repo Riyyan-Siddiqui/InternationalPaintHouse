@@ -1,28 +1,32 @@
-// Filename - App.js
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Routes, Route, Navigate } from "react-router-dom";
+import HomePage from "../Pages/HomePage";
+import ShopPage from "../Pages/ShopPage";
+import ProductById from "../Pages/ProductById";
+import ShoppingCartWishlist from "../Pages/ShoppingCartWishlist";
+import Dashboard from "../Pages/Dashboard";
+// import NormalRoute from "./NormalRoute";
+import AuthPages from "../Pages/Auth";
+import "../Styles/App.css";
 
-import logo from "./assets/react.svg";
-import "./App.css";
-
-function App() {
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>A simple React app.....</p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <form action="../../post" method="post" className="form">
-          <button type="submit">Connected?</button>
-        </form>
-      </header>
-    </div>
+    <Routes>
+      <Route index element={<HomePage />} />
+
+      <Route path="/home" element={<HomePage />}></Route>
+
+      <Route path="/shop" element={<ShopPage />} />
+
+      <Route path="/product:id" element={<ProductById />} />
+
+      <Route path="/shoppingcart" element={<ShoppingCartWishlist />} />
+
+      <Route path="/dashboard" element={<Dashboard />} />
+
+      <Route path="/login" element={<AuthPages />} />
+
+    </Routes>
   );
 }
-
-export default App;

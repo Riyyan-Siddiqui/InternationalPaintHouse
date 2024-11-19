@@ -6,7 +6,7 @@ import {
   AiOutlineShoppingCart,
   AiOutlineDelete,
 } from "react-icons/ai";
-import "./ShoppingCartWishlist.css";
+import "../Styles/ShoppingCartWishlist.css";
 
 export default function ShoppingCartWishlist() {
   const [cartItems, setCartItems] = useState([

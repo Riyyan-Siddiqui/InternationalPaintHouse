@@ -1,10 +1,10 @@
 import React from "react";
-import "./ShopPage.css"; // Import your CSS styles here
+import "../Styles/ShopPage.css"; // Import your CSS styles here
 
 const ShopPage = () => {
   return (
-    <>
-      <div id="title-container">
+    <body className="shoppage">
+      <div id="title-container" >
         <h1>Shop</h1>
       </div>
 
@@ -154,12 +154,12 @@ const ShopPage = () => {
             </select>
           </div>
           <div className="products">
-            <ul>
-              {Array(3)
+            <ul className="listing">
+              {Array(10)
                 .fill()
                 .map((_, index) => (
                   <li key={index} className="product-1 product">
-                    <a href="#">
+                    <a href="/product:id">
                       <img
                         src="https://www.paintlo.com/wp-content/uploads/2021/04/Berger-Nu-Emulsion.jpg"
                         alt="Product"
@@ -177,7 +177,7 @@ const ShopPage = () => {
           </div>
         </div>
       </section>
-    </>
+    </body>
   );
 };
 
