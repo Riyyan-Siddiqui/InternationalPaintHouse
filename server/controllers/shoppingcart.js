@@ -46,26 +46,45 @@ export const getShoppingCartById = (req, res) => {
     });
 };
 
-export const createShoppingCart = (req, res) => {
+export const createShoppingCart = async (req, res) => {
     const { user_id, admin_id } = req.body;
 
-    const query = `
-        INSERT INTO ShoppingCart (user_id, admin_id)
-        VALUES (?, ?);
-    `;
+    // Fetch user data from the /get_user/:id API
+    try {
+        const userResponse = await fetch(`http://your-api-url/api/v1/get_user/${user_id}`);
 
-    db.execute(query, [user_id || null, admin_id || null], (err, results) => {
-        if (err) {
-            console.error('Database error:', err);
-            return res.status(500).json({ error: 'Database error' });
+        if (!userResponse.ok) {
+            console.error('Failed to fetch user data');
+            return res.status(404).json({ error: 'User not found' });
         }
 
-        res.status(201).json({
-            message: 'Shopping cart created successfully',
-            cart_id: results.insertId,
+        const userData = await userResponse.json();
+        const user_id_from_api = userData.user_id;  // Extract the user_id from the API response
+
+        // Proceed to create the shopping cart using the fetched user_id
+        const query = `
+            INSERT INTO ShoppingCart (user_id, admin_id)
+            VALUES (?, ?);
+        `;
+
+        db.execute(query, [user_id_from_api, admin_id || 1], (err, results) => {
+            if (err) {
+                console.error('Database error:', err);
+                return res.status(500).json({ error: 'Failed to create shopping cart' });
+            }
+
+            res.status(201).json({
+                message: 'Shopping cart created successfully',
+                cart_id: results.insertId,
+            });
         });
-    });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        return res.status(500).json({ error: 'Failed to retrieve user data' });
+    }
 };
+
+
 
 
 export const updateShoppingCart = (req, res) => {

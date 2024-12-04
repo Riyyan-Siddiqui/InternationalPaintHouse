@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../Components/AuthContext";
 
 const AuthPages = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const { setIsLogin, setIsAdmin } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,6 +21,9 @@ const AuthPages = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoginForm, setIsLoginForm] = useState(true);
+
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,128 +32,190 @@ const AuthPages = () => {
       [name]: value,
     }));
   };
-
   const validateForm = () => {
     if (!formData.email || !formData.password) {
       setError("Email and password are required");
       return false;
     }
-    if (!isLogin && formData.password !== formData.confirmPassword) {
+    if (!isLoginForm && formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return false;
     }
     return true;
   };
-
-  const simulateApiCall = (data) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (
-          data.email === "test@example.com" &&
-          data.password === "password123"
-        ) {
-          resolve({ success: true, message: "Authentication successful" });
-        } else {
-          reject({ success: false, message: "Invalid credentials" });
-        }
-      }, 1500);
-    });
+  const createShoppingCart = async (userId) => {
+    try {
+      const response = await fetch("/api/v1/createShoppingCart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId, admin_id: 1 }), // Admin ID can be 1 or dynamically assigned
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Error creating shopping cart");
+      }
+      console.log("Shopping cart created:", data);
+    } catch (error) {
+      console.error("Error creating shopping cart:", error);
+      setError("Failed to create shopping cart");
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSignup = async () => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
-
     if (!validateForm()) return;
-
-    setIsLoading(true);
-
     try {
-      const response = await simulateApiCall(formData);
-      setSuccess(response.message);
-      console.log("User authenticated:", formData.email);
+      const response = await fetch("/api/v1/create_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccess(data.message);
+        setFormData({
+          email: "",
+          password: "",
+          confirmPassword: "",
+          first_name: "",
+          last_name: "",
+          phone_number1: "",
+          phone_number2: "",
+          street_address: "",
+          city: "",
+          province: "",
+          country: "",
+          gmaplink: "",
+        });
+        // After signup, navigate to the login page
+        navigate("/login"); // Redirect to login after successful signup
+      } else {
+        setError(data.message || "An error occurred during sign-up");
+      }
     } catch (error) {
-      setError(error.message);
+      setError("An error occurred during the request");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleLogin = async () => {
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch("/api/v1/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess("Login successful!");
+
+        // Save user data to local storage
+        localStorage.setItem("user", JSON.stringify(data));
+
+        const userId = data.user_id;
+
+        if (userId) {
+          // If the user ID is found, set isLogin to true
+          setIsLogin(true);
+
+          // Create a shopping cart for the user
+          await createShoppingCart(userId);
+
+          // Redirect to the home page
+          navigate(`/home/${userId}`);
+        } else {
+          setError("User ID is missing");
+        }
+      } else {
+        // If login fails for regular user, try admin login
+        await loginAdmin();
+      }
+    } catch (error) {
+      setError("An error occurred during the login request");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginAdmin = async () => {
+    try {
+      const adminResponse = await fetch("/api/v1/loginAdmin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const adminData = await adminResponse.json();
+
+      if (adminResponse.ok) {
+        // Set isAdmin to true as this user is an admin
+        setIsAdmin(true);
+        setIsLogin(true);
+
+        // Save admin data to local storage
+        localStorage.setItem("user", JSON.stringify(adminData));
+
+        setSuccess("Admin login successful!");
+        navigate("/admin/dashboard"); // Redirect to admin-specific page
+      } else {
+        setError(adminData.message || "Invalid credentials");
+      }
+    } catch (error) {
+      setError("An error occurred during admin login");
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isLoginForm) {
+      handleLogin();
+    } else {
+      handleSignup();
+    }
+  };
+
   const toggleForm = () => {
-    setIsLogin(!isLogin);
+    setIsLoginForm(!isLoginForm);
     setError("");
     setSuccess("");
   };
 
   return (
-    <div className="grid h-full w-full place-items-center bg-gradient-to-r from-blue-900 via-blue-800 to-blue-600">
-      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
-        <div className="flex w-full text-center">
-          <div
-            className={`w-1/2 text-2xl font-semibold transition-all ${
-              isLogin ? "text-blue-500" : "text-gray-500"
-            }`}
-          >
-            Login
-          </div>
-          <div
-            className={`w-1/2 text-2xl font-semibold transition-all ${
-              !isLogin ? "text-blue-500" : "text-gray-500"
-            }`}
-          >
-            Signup
-          </div>
-        </div>
-        <div className="relative flex justify-between mt-4 border border-gray-300 rounded-lg overflow-hidden">
-          <input
-            type="radio"
-            name="slide"
-            id="login"
-            checked={isLogin}
-            onChange={() => setIsLogin(true)}
-            hidden
-          />
-          <input
-            type="radio"
-            name="slide"
-            id="signup"
-            checked={!isLogin}
-            onChange={() => setIsLogin(false)}
-            hidden
-          />
-          <label
-            className="flex-1 text-center py-2 cursor-pointer z-10 text-white"
-            htmlFor="login"
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </label>
-          <label
-            className="flex-1 text-center py-2 cursor-pointer z-10 text-white"
-            htmlFor="signup"
-            onClick={() => setIsLogin(false)}
-          >
-            Signup
-          </label>
-          <div
-            className={`absolute h-full w-1/2 bg-gradient-to-r from-blue-900 via-blue-800 to-blue-600 transition-all duration-300`}
-            style={{
-              transform: isLogin ? "translateX(0)" : "translateX(100%)",
-            }}
-          />
-        </div>
-
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400">
+      <div className="w-full max-w-lg p-8 bg-white rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-gray-700">
+          {isLoginForm ? "Login" : "Sign Up"}
+        </h2>
         <form onSubmit={handleSubmit} className="mt-8">
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          {success && <div className="text-green-500 mb-4">{success}</div>}
-
+          {error && <div className="mb-4 text-red-500">{error}</div>}
+          {success && <div className="mb-4 text-green-500">{success}</div>}
+          {/* Common Fields */}
           <div className="mb-4">
             <input
               type="email"
               name="email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               placeholder="Email Address"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               value={formData.email}
               onChange={handleInputChange}
               required
@@ -158,22 +225,22 @@ const AuthPages = () => {
             <input
               type="password"
               name="password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               placeholder="Password"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
               value={formData.password}
               onChange={handleInputChange}
               required
             />
           </div>
-
-          {!isLogin && (
+          {/* Additional Fields for Signup */}
+          {!isLoginForm && (
             <>
               <div className="mb-4">
                 <input
                   type="password"
                   name="confirmPassword"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  placeholder="Confirm password"
+                  placeholder="Confirm Password"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   required
@@ -183,8 +250,8 @@ const AuthPages = () => {
                 <input
                   type="text"
                   name="first_name"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="First Name"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.first_name}
                   onChange={handleInputChange}
                   required
@@ -194,8 +261,8 @@ const AuthPages = () => {
                 <input
                   type="text"
                   name="last_name"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Last Name"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.last_name}
                   onChange={handleInputChange}
                   required
@@ -203,30 +270,10 @@ const AuthPages = () => {
               </div>
               <div className="mb-4">
                 <input
-                  type="tel"
-                  name="phone_number1"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  placeholder="Primary Phone Number"
-                  value={formData.phone_number1}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <input
-                  type="tel"
-                  name="phone_number2"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  placeholder="Secondary Phone Number"
-                  value={formData.phone_number2}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="mb-4">
-                <input
                   type="text"
                   name="street_address"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Street Address"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.street_address}
                   onChange={handleInputChange}
                   required
@@ -236,93 +283,63 @@ const AuthPages = () => {
                 <input
                   type="text"
                   name="city"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="City"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.city}
                   onChange={handleInputChange}
                   required
                 />
               </div>
               <div className="mb-4">
-                <select
+                <input
+                  type="text"
                   name="province"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  placeholder="Province"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.province}
                   onChange={handleInputChange}
                   required
-                >
-                  <option value="">Select Province</option>
-                  <option value="Sindh">Sindh</option>
-                  <option value="Balochistan">Balochistan</option>
-                  <option value="Punjab">Punjab</option>
-                  <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
-                  <option value="Kashmir">Kashmir</option>
-                </select>
+                />
               </div>
               <div className="mb-4">
                 <input
                   type="text"
                   name="country"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                   placeholder="Country"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                   value={formData.country}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              <div className="mb-4">
-                <input
-                  type="url"
-                  name="gmaplink"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  placeholder="Google Maps Link"
-                  value={formData.gmaplink}
-                  onChange={handleInputChange}
-                />
-              </div>
             </>
           )}
-
-          {isLogin && (
-            <div className="flex justify-between mb-4">
-              <div className="flex items-center">
-                <input type="checkbox" id="remember" className="mr-2" />
-                <label htmlFor="remember">Remember Me</label>
-              </div>
-              <div>
-                <a href="#" className="text-blue-500 hover:underline">
-                  Forgot Password?
-                </a>
-              </div>
-            </div>
-          )}
-
           <button
             type="submit"
-            className={`w-full p-3 bg-blue-600 text-white rounded-lg ${
+            className={`w-full px-4 py-2 text-white bg-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               isLoading ? "opacity-50" : ""
             }`}
             disabled={isLoading}
           >
-            {isLoading ? "Loading..." : isLogin ? "Login" : "Signup"}
+            {isLoading ? "Loading..." : isLoginForm ? "Login" : "Sign Up"}
           </button>
-
-          <div className="mt-4 text-center">
-            <span className="text-gray-600">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
-            </span>
+        </form>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            {isLoginForm ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={toggleForm}
-              className="text-blue-500 ml-2"
+              className="text-blue-500 underline"
             >
-              {isLogin ? "Signup" : "Login"}
+              {isLoginForm ? "Sign Up" : "Login"}
             </button>
-          </div>
-        </form>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
 export default AuthPages;
+

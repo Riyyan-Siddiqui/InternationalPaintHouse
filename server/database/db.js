@@ -8,7 +8,7 @@ import { config } from 'dotenv';
  const db = mysql.createPool({
     host: "localhost",
     user: "root",
-    password: "abc123",
+    password: "R123!@#n",
     database: "International_Paint_House",
     multipleStatements: true,
     port: 3306,

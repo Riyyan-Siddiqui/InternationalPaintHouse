@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   AiOutlineHeart,
   AiOutlineMinus,
@@ -148,7 +149,10 @@ export default function ShoppingCartWishlist() {
                     ${calculateTotal(cartItems).toFixed(2)}
                   </span>
                 </div>
-                <button className="checkout-button">Proceed to Checkout</button>
+                <Link to={`/shop/shoppingcart/checkout`}>
+                  <button className="checkout-button">Proceed to Checkout</button>
+                </Link>
+                
               </div>
             </>
           ) : (

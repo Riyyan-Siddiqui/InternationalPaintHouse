@@ -1,88 +1,9 @@
 import React, { useState } from "react";
-import {
-  FaPaintBrush,
-  FaTools,
-  FaLeaf,
-  FaTint,
-  FaBars,
-  FaTimes,
-  FaHeart,
-  FaShoppingCart,
-} from "react-icons/fa";
 
 const HomePage = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartAmount, setCartAmount] = useState(0);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
 
   return (
     <div>
-      {/* Header */}
-      <header className="flex justify-between items-center p-4 bg-white shadow-md">
-        <div className="flex items-center text-blue-600 text-3xl font-bold">
-          <FaPaintBrush className="mr-2" />
-          <span>ColorCraft</span>
-        </div>
-        <nav className={`relative ${isMenuOpen ? "block" : "hidden"} md:block`}>
-          <button
-            className="md:hidden text-gray-700 text-2xl"
-            onClick={toggleMenu}
-          >
-            {isMenuOpen ? <FaTimes /> : <FaBars />}
-          </button>
-          <ul className={`flex flex-col md:flex-row list-none`}>
-            <li className="mx-4">
-              <a href="/home" className="text-gray-800 hover:text-blue-600">
-                Home
-              </a>
-            </li>
-            <li className="mx-4">
-              <a href="/shop" className="text-gray-800 hover:text-blue-600">
-                Products
-              </a>
-            </li>
-            <li className="mx-4">
-              <a href="#services" className="text-gray-800 hover:text-blue-600">
-                Services
-              </a>
-            </li>
-            <li className="mx-4">
-              <a href="#about" className="text-gray-800 hover:text-blue-600">
-                About
-              </a>
-            </li>
-            <li className="mx-4">
-              <a href="#contact" className="text-gray-800 hover:text-blue-600">
-                Contact
-              </a>
-            </li>
-            <li className="flex items-center mx-4">
-              <a
-                href="#wishlist"
-                className="flex items-center text-gray-800 hover:text-blue-600"
-              >
-                <FaHeart className="mr-1" /> Wishlist
-              </a>
-            </li>
-            <li className="flex items-center mx-4">
-              <a
-                href="#cart"
-                className="flex items-center text-gray-800 hover:text-blue-600"
-              >
-                <FaShoppingCart className="mr-1" /> Cart
-                <span className="bg-red-600 text-white rounded-full px-2 text-sm ml-1">
-                  {cartAmount}
-                </span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
-
-      {/* Main Content */}
       <main>
         {/* Hero Section */}
         <section
@@ -99,7 +20,7 @@ const HomePage = () => {
                 Discover premium paints and expert advice at ColorCraft
               </p>
               <a
-                href="#products"
+                href="/products"
                 className="bg-blue-600 text-white py-3 px-6 rounded-lg text-lg hover:bg-blue-500 transition duration-200"
               >
                 Explore Our Collection
@@ -285,13 +206,6 @@ const HomePage = () => {
           </form>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="p-4 bg-gray-800 text-white text-center">
-        <p>
-          &copy; {new Date().getFullYear()} ColorCraft. All Rights Reserved.
-        </p>
-      </footer>
     </div>
   );
 };
