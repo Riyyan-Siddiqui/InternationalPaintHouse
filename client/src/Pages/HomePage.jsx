@@ -9,7 +9,7 @@ const HomePage = () => {
         <section
           id="home"
           className="relative h-[600px] bg-cover bg-center"
-          style={{ backgroundImage: "url('https://placehold.co/1200x600')" }}
+          style={{ backgroundImage: "url('')" }}
         >
           <div className="flex items-center justify-center h-full bg-black bg-opacity-60">
             <div className="text-center text-white p-8 rounded-lg">

@@ -318,7 +318,7 @@ export const login = (req, res) => {
     });
   }
 
-  const query = `SELECT user_id, password_hash FROM Users WHERE email = ?`;
+  const query = `SELECT first_name, last_name , user_id, password_hash FROM Users WHERE email = ?`;
 
   db.query(query, [email], (err, results) => {
     if (err) {
@@ -342,7 +342,7 @@ export const login = (req, res) => {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      res.json({ user_id: user.user_id, message: "Login successful" });
+      res.json({user_id: user.user_id, message: "Login successful" });
     });
   });
 };

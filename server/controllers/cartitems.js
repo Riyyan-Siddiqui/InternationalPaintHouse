@@ -39,7 +39,7 @@ export const addCartItem = (req, res) => {
         VALUES (?, ?, ?, ?)
     `;
 
-    db.execute(query, [cart_id, product_id, variant_id || null, quantity], (err, results) => {
+    db.execute(query, [cart_id || 1, product_id, variant_id || null, quantity], (err, results) => {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Database error' });

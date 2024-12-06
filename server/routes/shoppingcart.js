@@ -6,7 +6,7 @@ import { getAllShoppingCarts,getShoppingCartById,createShoppingCart,updateShoppi
 
 router.get('/shopping-carts', authenticateAdmin, getAllShoppingCarts); // Restrict access to admins
 router.get('/getShoppingCartById/:id',getShoppingCartById);
-router.post('/createShoppingCart',createShoppingCart);
+router.post('/createShoppingCart/:id',createShoppingCart);
 router.put('/updateShoppingCart/:id',updateShoppingCart);
 router.delete('/deleteShoppingCart/:id',deleteShoppingCart);
 

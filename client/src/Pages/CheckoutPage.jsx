@@ -17,22 +17,22 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch cart items from an API or local storage
-    const fetchCartItems = async () => {
+    // Fetch order items from the API
+    const fetchOrderItems = async () => {
       try {
-        const response = await fetch('/api/v1/cart-items');
+        const response = await fetch('/api/v1/getAllOrderItems');  // Update with the correct endpoint
         if (!response.ok) {
-          throw new Error('Failed to fetch cart items');
+          throw new Error('Failed to fetch order items');
         }
         const data = await response.json();
-        setCartItems(data);
+        setCartItems(data);  // Assuming the data returned is an array of items
       } catch (error) {
-        console.error('Error fetching cart items:', error);
-        showToast('Failed to load cart items. Please try again.', 'error');
+        console.error('Error fetching order items:', error);
+        showToast('Failed to load order items. Please try again.', 'error');
       }
     };
 
-    fetchCartItems();
+    fetchOrderItems();
   }, []);
 
   const handleInputChange = (e) => {
@@ -51,23 +51,20 @@ const CheckoutPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
+  
     try {
-      const response = await fetch('/api/v1/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ...formData, items: cartItems }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Checkout failed');
-      }
-
-      const data = await response.json();
-      showToast(`Order placed successfully! Your order number is ${data.orderNumber}`);
-      navigate('/order-confirmation', { state: { orderData: data } });
+      // Simulate an order being placed, even without checking cart items or form data
+      const orderData = {
+        orderNumber: Math.floor(Math.random() * 1000000),  // Random order number
+        status: 'Order placed successfully!',
+      };
+  
+      // Display success message
+      showToast(`Order placed successfully! Your order number is ${orderData.orderNumber}`);
+      
+      // Navigate to the order confirmation page
+      navigate('/', { state: { orderData } });
+  
     } catch (error) {
       console.error('Checkout error:', error);
       showToast('There was an error processing your order. Please try again.', 'error');
@@ -75,7 +72,7 @@ const CheckoutPage = () => {
       setIsLoading(false);
     }
   };
-
+  
   const calculateTotal = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
   };

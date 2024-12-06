@@ -4,6 +4,7 @@ import { ProductSection } from "../Components/ProductSection";
 import { AnalyticsSection } from "../Components/AnalyticsSection";
 import { StockSection } from "../Components/StockSection";
 import { OverviewSection } from "../Components/OverviewSection";
+import { OrderSection } from "../Components/OrderSection"; // Import Order Section
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -51,6 +52,8 @@ const Dashboard = () => {
         return <AnalyticsSection />;
       case "stock":
         return <StockSection showNotification={showNotification} />;
+      case "orders":
+        return <OrderSection showNotification={showNotification} />; // Add Order Section
       default:
         return <OverviewSection data={overviewData} />;
     }
@@ -61,7 +64,7 @@ const Dashboard = () => {
       <aside className="w-64 bg-gray-800 text-white p-6">
         <h1 className="text-2xl font-bold text-center mb-8">Paint Pro</h1>
         <nav>
-          {["overview", "users", "products", "analytics", "stock"].map(
+          {["overview", "users", "products", "analytics", "stock", "orders"].map(
             (tab) => (
               <button
                 key={tab}

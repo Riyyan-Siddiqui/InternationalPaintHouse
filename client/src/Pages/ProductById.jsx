@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 
 const ProductById = () => {
   const { productId } = useParams();
@@ -11,6 +11,7 @@ const ProductById = () => {
   const [counter, setCounter] = useState(1);
   const [size, setSize] = useState("Choose an option");
   const [shade, setShade] = useState("");
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -47,6 +48,43 @@ const ProductById = () => {
   const decrement = () => setCounter(counter > 1 ? counter - 1 : 1);
   const handleSizeChange = (e) => setSize(e.target.value);
 
+  const addToCart = async () => {
+    // if (size === "Choose an option") {
+    //   // Proceed to the cart directly if size isn't selected, no notification
+    // }
+
+    window.location.href = '/shop/shoppingcart/';
+  
+    // try {
+    //   const response = await fetch(`/api/v1/addCartItem`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       productId: product.id,
+    //       quantity: counter,
+    //       size, // Will be passed as "Choose an option" if not selected
+    //       shade,
+    //     }),
+    //   });
+  
+    //   if (!response.ok) {
+    //     throw new Error("Failed to add product to cart.");
+    //   }
+  
+    //   const data = await response.json();
+    //   setNotification({ message: data.message || "Product added to cart!", type: "success" });
+  
+    //   // Redirect to the shopping cart page
+    //   window.location.href = '/shop/shoppingcart/'; // Redirect immediately to cart
+  
+    // } catch (err) {
+    //   setNotification({ message: err.message || "Failed to add to cart.", type: "error" });
+    // }
+  };
+  
+
   if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
   if (error) return <div className="flex justify-center items-center h-screen text-red-500">Error: {error}</div>;
   if (!product) return <div className="flex justify-center items-center h-screen">Product not found</div>;
@@ -70,33 +108,25 @@ const ProductById = () => {
               <p className="text-2xl font-semibold text-blue-600 mb-4">₨{product.price}</p>
               <p className="text-gray-700 mb-4">Brand: {brand.brand_name}</p>
               <p className="text-gray-600 mb-6">{product.disclaimer}</p>
-              
+
               <div className="mb-6">
                 <label htmlFor="size" className="block text-sm font-medium text-gray-700 mb-2">Size:</label>
-                <div className="flex items-center">
-                  <select
-                    id="size"
-                    name="size"
-                    value={size}
-                    onChange={handleSizeChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  >
-                    <option value="Choose an option">Choose an option</option>
-                    {product.sizes?.map((sizeOption) => (
-                      <option key={sizeOption} value={sizeOption}>
-                        {sizeOption}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => setSize("Choose an option")}
-                    className="ml-2 text-sm text-gray-600 hover:text-gray-800"
-                  >
-                    Clear
-                  </button>
-                </div>
+                <select
+                  id="size"
+                  name="size"
+                  value={size}
+                  onChange={handleSizeChange}
+                  className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="Choose an option">Choose an option</option>
+                  {product.sizes?.map((sizeOption) => (
+                    <option key={sizeOption} value={sizeOption}>
+                      {sizeOption}
+                    </option>
+                  ))}
+                </select>
               </div>
-              
+
               <div className="mb-6">
                 <label htmlFor="shade" className="block text-sm font-medium text-gray-700 mb-2">Shade:</label>
                 <input
@@ -105,74 +135,37 @@ const ProductById = () => {
                   placeholder="Write shade name or number from shade card"
                   value={shade}
                   onChange={(e) => setShade(e.target.value)}
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
-              
+
               <div className="flex items-center mb-6">
                 <div className="flex items-center border rounded-md">
-                  <button onClick={decrement} className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium">-</button>
-                  <span className="py-2 px-4 bg-white text-gray-800 font-medium">{counter}</span>
-                  <button onClick={increment} className="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium">+</button>
+                  <button onClick={decrement} className="py-2 px-4 bg-gray-100 hover:bg-gray-200">-</button>
+                  <span className="py-2 px-4 bg-white">{counter}</span>
+                  <button onClick={increment} className="py-2 px-4 bg-gray-100 hover:bg-gray-200">+</button>
                 </div>
-                <Link to={`/shop/shoppingcart/`}><button className="ml-4 py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition duration-300">ADD TO CART</button></Link>
-                
-              </div>
-              
-              <hr className="my-6" />
-              
-              <div className="text-sm text-gray-600">
-                <p className="mb-2"><span className="font-semibold">SKU:</span> {product.sku}</p>
-                <p className="mb-2"><span className="font-semibold">Categories:</span> {category.category_name}</p>
-                <p className="mb-2"><span className="font-semibold">Tag:</span> {product.tag}</p>
-                <p><span className="font-semibold">Share:</span> 
-                  {/* Add social sharing buttons here */}
-                  <button className="ml-2 text-blue-500 hover:text-blue-600">Facebook</button>
-                  <button className="ml-2 text-blue-400 hover:text-blue-500">Twitter</button>
-                  <button className="ml-2 text-red-500 hover:text-red-600">Pinterest</button>
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-        
-        <section className="mt-12">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex">
-              <a href="#description" className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600">
-                DESCRIPTION
-              </a>
-              <a href="#additional-info" className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 ml-8">
-                ADDITIONAL INFORMATION
-              </a>
-              <a href="#reviews" className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 ml-8">
-                REVIEWS ({product.reviews?.length || 0})
-              </a>
-            </nav>
-          </div>
-          <div className="mt-6 prose max-w-none">
-            <h3 id="description" className="text-lg font-medium text-gray-900">Description</h3>
-            <p className="mt-4 text-gray-500">{product.description}</p>
-            {/* Add more content for description, additional information, and reviews as needed */}
-          </div>
-        </section>
-        
-        <section className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
-          {/* Add related products here */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Example related product card */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <img src="/placeholder.svg?height=200&width=200" alt="Related Product" className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-2">Related Product</h3>
-                <p className="text-gray-600">₨1000</p>
-                <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                  View Product
+                <button
+                  onClick={addToCart}
+                  className="ml-4 py-2 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md"
+                >
+                  ADD TO CART
                 </button>
               </div>
+
+              {notification && (
+                <div
+                  className={`mt-4 p-4 rounded ${
+                    notification.type === "error" ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+                  }`}
+                >
+                  {notification.message}
+                </div>
+              )}
+
+              <hr className="my-6" />
+              {/* Additional product details */}
             </div>
-            {/* Repeat for other related products */}
           </div>
         </section>
       </div>
@@ -181,4 +174,3 @@ const ProductById = () => {
 };
 
 export default ProductById;
-

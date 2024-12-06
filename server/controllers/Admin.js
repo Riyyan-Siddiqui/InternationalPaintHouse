@@ -90,14 +90,21 @@ export const loginAdmin = (req, res) => {
 
             // Generate a JWT token
             const token = jwt.sign(
-                { admin_id: admin.admin_id, email: admin.email },
-                'your_jwt_secret',
+                { admin_id: admin.admin_id, email: admin.email, isAdmin: true },
+                process.env.JWT_SECRET || 'your_jwt_secret',
                 { expiresIn: '1h' }
             );
 
             res.status(200).json({ 
-                message: 'Login successful',
-                token 
+                message: 'Admin login successful',
+                token,
+                user: {
+                    admin_id: admin.admin_id,
+                    first_name: admin.first_name,
+                    last_name: admin.last_name,
+                    email: admin.email,
+                    isAdmin: true
+                }
             });
         });
     });

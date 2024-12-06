@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   AiOutlineHeart,
@@ -12,21 +12,14 @@ import "../Styles/ShoppingCartWishlist.css";
 export default function ShoppingCartWishlist() {
   const [cartItems, setCartItems] = useState([
     {
-      id: 1,
-      name: "Wireless Earbuds",
-      price: 79.99,
-      quantity: 2,
-      image: "https://placehold.co/100x100",
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      price: 199.99,
-      quantity: 1,
-      image: "https://placehold.co/100x100",
-    },
-  ]);
+    id:1,
+    name: "interior paint",
+    price: 29.99,
+    quantity: 1,
+    image: "https://gobispaint.com.pk/php_assets/uploads/2021/12/Gobis-Aqueous-Matt-Finish.png",
+    }
 
+  ]);
   const [wishlistItems, setWishlistItems] = useState([
     {
       id: 3,
@@ -36,8 +29,24 @@ export default function ShoppingCartWishlist() {
       image: "https://placehold.co/100x100",
     },
   ]);
-
   const [activeTab, setActiveTab] = useState("cart");
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await fetch("/api/v1/getCartItems/1");
+        if (!response.ok) {
+          throw new Error("Failed to fetch cart items");
+        }
+        const data = await response.json();
+        setCartItems(data);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    };
+
+    fetchCartItems();
+  }, []);
 
   const updateQuantity = (id, newQuantity, isCart) => {
     const updateItems = (items) =>
@@ -139,7 +148,7 @@ export default function ShoppingCartWishlist() {
       {activeTab === "cart" && (
         <div>
           <h2 className="section-title">Shopping Cart</h2>
-          {cartItems.length > 0 ? (
+          {cartItems.length > -1 ? (
             <>
               {renderItems(cartItems, true)}
               <div className="total-section">
@@ -152,7 +161,6 @@ export default function ShoppingCartWishlist() {
                 <Link to={`/shop/shoppingcart/checkout`}>
                   <button className="checkout-button">Proceed to Checkout</button>
                 </Link>
-                
               </div>
             </>
           ) : (
